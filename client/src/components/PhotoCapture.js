@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Camera, ArrowLeft, RotateCcw, Upload } from 'lucide-react';
 import Webcam from 'react-webcam';
 import toast from 'react-hot-toast';
+import { API_ENDPOINTS } from '../config/api';
 
 const PhotoCapture = ({ sessionId, profession, onCaptured, onBack }) => {
   const [capturedImage, setCapturedImage] = useState(null);
@@ -41,7 +42,7 @@ const PhotoCapture = ({ sessionId, profession, onCaptured, onBack }) => {
       formData.append('photo', blob, 'photo.jpg');
       formData.append('sessionId', sessionId);
 
-      const uploadResponse = await fetch('/api/faceswap/upload-photo', {
+              const uploadResponse = await fetch(API_ENDPOINTS.UPLOAD_PHOTO, {
         method: 'POST',
         body: formData,
       });

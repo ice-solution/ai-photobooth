@@ -7,6 +7,7 @@ import ProfessionValidation from './components/ProfessionValidation';
 import ResultDisplay from './components/ResultDisplay';
 import LoadingSpinner from './components/LoadingSpinner';
 import { generateSessionId } from './utils/session';
+import { API_ENDPOINTS } from './config/api';
 
 function App() {
   const [currentStep, setCurrentStep] = useState('voice');
@@ -56,7 +57,7 @@ function App() {
     setError('');
     
     try {
-      const response = await fetch('/api/generate/profession-photo', {
+      const response = await fetch(API_ENDPOINTS.GENERATE_PHOTO, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,7 +85,7 @@ function App() {
     setError('');
     
     try {
-      const response = await fetch('/api/faceswap/swap', {
+      const response = await fetch(API_ENDPOINTS.FACE_SWAP, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

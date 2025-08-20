@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Check, X, Edit3 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { API_ENDPOINTS } from '../config/api';
 
 const ProfessionValidation = ({ voiceText, sessionId, onValidated, onBack }) => {
   const [isValidating, setIsValidating] = useState(false);
@@ -20,7 +21,7 @@ const ProfessionValidation = ({ voiceText, sessionId, onValidated, onBack }) => 
     setValidationResult(null);
 
     try {
-      const response = await fetch('/api/profession/validate', {
+      const response = await fetch(API_ENDPOINTS.PROFESSION_VALIDATE, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

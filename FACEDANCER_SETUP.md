@@ -31,7 +31,7 @@ HUGGINGFACE_API_KEY=hf_your_actual_api_key_here
 #### 3. 測試 API
 ```bash
 # 測試 Hugging Face API 連接
-curl -H "Authorization: Bearer YOUR_API_KEY" \
+curl -H "Authorization: Bearer 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" \
      https://api-inference.huggingface.co/models/felixrosberg/FaceDancer
 ```
 
