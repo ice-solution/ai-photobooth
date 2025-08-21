@@ -46,12 +46,14 @@ const ResultDisplay = ({ userPhoto, generatedPhoto, finalPhoto, profession, onRe
           </p>
         </div>
 
+
+
         {/* 主要圖片顯示 */}
         <div className="text-center mb-8">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
             className="inline-block border-4 border-gray-200 rounded-lg overflow-hidden"
           >
             <img

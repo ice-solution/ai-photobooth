@@ -1,181 +1,135 @@
-# 🎭 臉部交換效果改進說明
+# 🎯 Faceswap 改進方案
 
-## 🔍 問題分析
+## ✅ 問題分析
 
-你之前遇到的效果問題：
-- **臉部邊緣明顯拼接痕跡** - 簡單的矩形裁剪
-- **眼鏡框殘留** - 沒有智能遮罩
-- **光線和膚色不匹配** - 缺乏顏色調整
-- **整體效果不自然** - 缺乏邊緣模糊
+用戶反映兩個問題：
+1. **結果頁需要顯示換臉前後對比**
+2. **面部影響度太低，換臉後圖片要更接近玩家**
 
-## ✅ 改進方案
+## 🔧 解決方案
 
-### 1. 智能臉部定位
+### 1. 結果頁顯示換臉前後對比 ✅
+
+**修改文件**: `client/src/components/ResultDisplay.js`
+
+**新增功能**:
+- 三欄對比顯示：原始照片、AI 生成照片、最終結果
+- 動畫效果：從左到右依次顯示
+- 視覺區分：最終結果用綠色邊框突出
+
 ```javascript
-// 計算臉部區域 (智能定位)
-const faceSize = Math.min(targetWidth, targetHeight) * 0.35; // 臉部佔圖片 35%
-const faceX = (targetWidth - faceSize) / 2;
-const faceY = targetHeight * 0.12; // 臉部位置在圖片上方 12%
-```
-
-### 2. 橢圓形遮罩邊緣模糊
-```javascript
-// 創建橢圓形臉部遮罩
-const maskSvg = `
-  <svg width="${maskSize}" height="${maskSize}">
-    <defs>
-      <radialGradient id="faceGradient" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" style="stop-color:white;stop-opacity:1" />
-        <stop offset="70%" style="stop-color:white;stop-opacity:1" />
-        <stop offset="100%" style="stop-color:white;stop-opacity:0" />
-      </radialGradient>
-    </defs>
-    <ellipse cx="${maskSize/2}" cy="${maskSize/2}" 
-             rx="${maskSize/2 * 0.85}" ry="${maskSize/2 * 0.75}" 
-             fill="url(#faceGradient)"/>
-  </svg>
-`;
-```
-
-### 3. 顏色平衡調整
-```javascript
-// 調整源臉部圖片大小並優化
-const resizedSource = await sharp(sourceImagePath)
-  .resize(faceSize, faceSize, { 
-    fit: 'cover',
-    position: 'center'
-  })
-  .modulate({
-    brightness: 1.1,  // 稍微調亮
-    saturation: 0.9   // 稍微降低飽和度
-  })
-  .jpeg({ quality: 95 })
-  .toBuffer();
-```
-
-### 4. 整體光線優化
-```javascript
-// 使用智能合成
-const result = await sharp(targetImagePath)
-  .resize(targetWidth, targetHeight, { fit: 'cover' })
-  .composite([
-    {
-      input: resizedSource,
-      top: Math.round(faceY),
-      left: Math.round(faceX),
-      blend: 'over'
-    },
-    {
-      input: mask,
-      top: Math.round(faceY),
-      left: Math.round(faceX),
-      blend: 'multiply'
-    }
-  ])
-  .modulate({
-    brightness: 1.05,  // 整體稍微調亮
-    contrast: 1.1      // 增加對比度
-  })
-  .jpeg({ quality: 95 })
-  .toFile(outputPath);
-```
-
-## 🚀 服務架構
-
-### 1. 多層次服務
-- **Hugging Face Spaces** - 主要服務 (免費/付費)
-- **自建 FaceDancer 服務** - 備用服務 (本地)
-- **智能備用方案** - 最終備用 (改進版)
-
-### 2. 自動降級機制
-```javascript
-// 1. 嘗試 Hugging Face API
-try {
-  resultPath = await this.swapFaceWithHF(preprocessedSource, preprocessedTarget);
-} catch (hfError) {
-  console.log('⚠️ Hugging Face API 失敗，嘗試自建服務...');
-  
-  // 2. 嘗試自建服務
-  try {
-    resultPath = await this.swapFaceWithCustomAPI(preprocessedSource, preprocessedTarget);
-  } catch (customError) {
-    console.log('⚠️ 自建服務也失敗，使用備用方案...');
+{/* 換臉前後對比 */}
+<div className="mb-8">
+  <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">換臉前後對比</h3>
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    {/* 原始照片 */}
+    <motion.div>
+      <h4>原始照片</h4>
+      <img src={userPhoto} alt="原始照片" />
+    </motion.div>
     
-    // 3. 智能備用方案
-    resultPath = await this.fallbackFaceSwap(sourceImagePath, targetImagePath);
-  }
-}
+    {/* AI 生成照片 */}
+    <motion.div>
+      <h4>AI 生成照片</h4>
+      <img src={generatedPhoto} alt="AI 生成照片" />
+    </motion.div>
+    
+    {/* 最終結果 */}
+    <motion.div>
+      <h4>最終結果</h4>
+      <img src={finalPhoto} alt="最終結果" />
+    </motion.div>
+  </div>
+</div>
 ```
 
-## 📋 使用建議
+### 2. 提高面部影響度 ✅
 
-### 1. 圖片品質要求
-- **源臉部圖片**: 清晰、正面、光線適中
-- **目標圖片**: 高解析度、臉部角度相近
-- **檔案格式**: JPEG/PNG，建議 512x512 以上
+**修改文件**: `piapi-faceswap-integration.js`
 
-### 2. 最佳實踐
-- 確保臉部角度相近 (正面對正面)
-- 光線條件相似
-- 避免極端表情
-- 臉部清晰無遮擋
+**改進設定**:
+- 使用專門的 faceswap 模型
+- 增加面部影響度參數
+- 提高混合強度
 
-### 3. 效果優化
-- 使用橢圓形遮罩避免邊緣痕跡
-- 智能顏色平衡
-- 邊緣模糊處理
-- 整體光線調整
+```javascript
+const requestData = {
+  model: "Qubico/face-swap",  // 專門的 faceswap 模型
+  task_type: "face-swap",
+  input: {
+    target_image: `data:image/jpeg;base64,${targetImageBase64}`,
+    swap_image: `data:image/jpeg;base64,${sourceImageBase64}`,
+    // 增加面部影響度參數
+    face_enhancement: true,
+    preserve_expression: false,  // 不保留原始表情，讓玩家表情更明顯
+    blend_strength: 0.9,  // 提高混合強度 (0.1-1.0)
+    face_detection_confidence: 0.8  // 提高臉部檢測信心度
+  }
+};
+```
 
-## 🔧 技術細節
+## 📊 參數說明
 
-### 1. 遮罩技術
-- **橢圓形遮罩**: 更自然的臉部形狀
-- **漸變邊緣**: 平滑的過渡效果
-- **高斯模糊**: 消除硬邊界
+### 面部影響度參數
 
-### 2. 顏色處理
-- **亮度調整**: 匹配目標圖片光線
-- **飽和度控制**: 避免過度鮮豔
-- **對比度優化**: 增強細節
+| 參數 | 值 | 說明 |
+|------|----|----|
+| `face_enhancement` | `true` | 啟用面部增強 |
+| `preserve_expression` | `false` | 不保留原始表情，讓玩家表情更明顯 |
+| `blend_strength` | `0.9` | 混合強度，0.1-1.0，越高影響越大 |
+| `face_detection_confidence` | `0.8` | 臉部檢測信心度，提高準確性 |
 
-### 3. 尺寸計算
-- **智能比例**: 根據圖片尺寸自動計算
-- **位置優化**: 臉部在合適位置
-- **品質保持**: 高解析度輸出
+### 模型選擇
+
+| 模型 | 用途 | 效果 |
+|------|----|----|
+| `Qubico/image-toolkit` | 通用工具包 | 基礎 faceswap |
+| `Qubico/face-swap` | 專門 faceswap | **更好的效果** ✅ |
+
+## 🧪 測試方案
+
+### 測試腳本
+```bash
+# 測試不同的 PiAPI 設定
+node test-piapi-settings.js
+```
+
+### 測試配置
+1. **基礎設定**: 原始設定
+2. **專門 faceswap 模型**: 使用專門模型
+3. **高影響度設定**: 增加影響度參數
+4. **最高影響度設定**: 最大化影響度
 
 ## 🎯 預期效果
 
-### 改進前 vs 改進後
-- **邊緣處理**: 從明顯拼接 → 自然過渡
-- **顏色匹配**: 從不協調 → 和諧統一
-- **整體效果**: 從人工痕跡 → 自然融合
-- **細節保持**: 從模糊 → 清晰銳利
+### 結果頁改進
+- ✅ 清晰的三欄對比
+- ✅ 動畫效果增強用戶體驗
+- ✅ 視覺區分突出最終結果
 
-## 🚀 快速測試
+### 面部影響度提升
+- ✅ 玩家臉部特徵更明顯
+- ✅ 表情更接近原始照片
+- ✅ 整體相似度提高
 
-```bash
-# 測試改進的臉部交換
-node test-improved-faceswap.js
+## 🔍 技術細節
 
-# 啟動自建服務
-./venv/bin/python facedancer-server.py
+### 前端改進
+- 響應式設計：手機端單欄，桌面端三欄
+- 動畫延遲：依次顯示，避免同時出現
+- 視覺層次：最終結果用綠色邊框突出
 
-# 測試 Hugging Face Space
-curl https://your-username-facedancer.hf.space/health
-```
+### 後端改進
+- 模型優化：使用專門的 faceswap 模型
+- 參數調優：提高混合強度和檢測信心度
+- 表情處理：不保留原始表情，突出玩家表情
 
-## 📈 性能優化
+## 🎉 總結
 
-### 1. 處理速度
-- **預處理**: 圖片尺寸標準化
-- **並行處理**: 多個步驟同時進行
-- **快取機制**: 重複處理優化
+通過以上改進：
 
-### 2. 記憶體使用
-- **流式處理**: 避免大檔案載入
-- **及時清理**: 自動清理臨時檔案
-- **品質平衡**: 檔案大小與品質平衡
+1. **用戶體驗提升**: 清晰看到換臉前後對比
+2. **技術效果提升**: 面部影響度更高，更接近玩家
+3. **視覺效果提升**: 專業的對比展示
 
----
-
-**注意**: 臉部交換技術應負責任地使用，遵守相關法律法規和道德準則。
+這些改進將大大提升用戶滿意度和 faceswap 效果！🎯✨

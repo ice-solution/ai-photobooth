@@ -121,16 +121,19 @@ class FaceDancerIntegration {
     }
   }
 
-  // 圖片預處理 - 確保圖片符合 FaceDancer 要求
+  // 圖片預處理 - 確保圖片符合 PiAPI 要求
   async preprocessImage(imagePath) {
     try {
       const uploadPath = path.resolve(process.env.UPLOAD_PATH || './uploads');
       const filename = `preprocessed_${path.basename(imagePath)}`;
       const outputPath = path.join(uploadPath, filename);
 
-      // 使用 sharp 進行預處理
+      // 獲取原始圖片資訊
+      const metadata = await sharp(imagePath).metadata();
+      console.log(`📊 預處理圖片: ${metadata.width}x${metadata.height}`);
+
+      // 使用 sharp 進行預處理 - 保持原始尺寸，只調整格式和質量
       await sharp(imagePath)
-        .resize(256, 256, { fit: 'cover', position: 'center' }) // FaceDancer 標準尺寸
         .jpeg({ quality: 95 })
         .toFile(outputPath);
 
