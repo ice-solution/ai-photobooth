@@ -117,16 +117,18 @@ router.post('/swap', async (req, res) => {
     await user.save();
 
     // 執行換臉處理
-    const finalImagePath = await performFaceSwap(user.userPhoto, user.generatedPhoto);
+    const faceSwapResult = await performFaceSwap(user.userPhoto, user.generatedPhoto);
     
-    // 更新最終照片路徑
-    user.finalPhoto = `/uploads/${path.basename(finalImagePath)}`;
+    // 更新最終照片路徑（使用生產環境 URL）
+    user.finalPhoto = faceSwapResult.productionUrl;
     user.status = 'completed';
     await user.save();
 
     res.json({
       success: true,
-      finalPhotoUrl: user.finalPhoto,
+      finalPhotoUrl: faceSwapResult.productionUrl,
+      localPath: faceSwapResult.localPath,
+      filename: faceSwapResult.filename,
       message: '換臉完成'
     });
 
@@ -194,9 +196,9 @@ async function performFaceSwap(userPhotoPath, generatedPhotoPath) {
     const faceDancer = new FaceDancerIntegration();
     
     // 使用 FaceDancer 進行臉部交換
-    const finalImagePath = await faceDancer.performFaceSwap(userPhotoFullPath, generatedPhotoFullPath);
+    const faceSwapResult = await faceDancer.performFaceSwap(userPhotoFullPath, generatedPhotoFullPath);
     
-    return finalImagePath;
+    return faceSwapResult;
   } catch (error) {
     console.error('FaceDancer 臉部交換錯誤:', error);
     

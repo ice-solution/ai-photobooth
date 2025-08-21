@@ -8,8 +8,9 @@ const router = express.Router();
 function extractProfessionFromText(text) {
   const lowerText = text.toLowerCase();
   
-  // 職業關鍵詞映射
+  // 職業關鍵詞映射（包含創意職業）
   const professionKeywords = {
+    // 傳統職業
     '醫生': ['醫生', '醫師', '大夫', '醫', 'doctor', 'physician'],
     '護士': ['護士', '護理師', 'nurse'],
     '教師': ['教師', '老師', '教授', '講師', 'teacher', 'professor'],
@@ -30,7 +31,30 @@ function extractProfessionFromText(text) {
     '運動員': ['運動員', 'athlete'],
     '科學家': ['科學家', 'scientist'],
     '記者': ['記者', 'journalist', 'reporter'],
-    '程式設計師': ['程式設計師', 'programmer', 'developer'],
+    
+    // 創意和夢想職業
+    '太空人': ['太空人', '宇航員', 'astronaut', 'spaceman'],
+    '幼兒老師': ['幼兒老師', '幼稚園老師', 'kindergarten teacher', 'preschool teacher'],
+    '遊戲設計師': ['遊戲設計師', 'game designer', 'game developer'],
+    '動畫師': ['動畫師', 'animator', 'animation artist'],
+    '電影導演': ['電影導演', '導演', 'film director', 'movie director'],
+    '漫畫家': ['漫畫家', 'comic artist', 'manga artist', 'cartoonist'],
+    '電競選手': ['電競選手', '電競', 'esports player', 'gamer', 'pro gamer'],
+    'YouTuber': ['youtuber', 'youtube', '網紅', 'content creator', 'vlogger'],
+    '程式設計師': ['程式設計師', 'programmer', 'developer', 'software engineer'],
+    '創業家': ['創業家', '企業家', 'entrepreneur', 'startup founder'],
+    '海洋生物學家': ['海洋生物學家', 'marine biologist', 'ocean scientist'],
+    '考古學家': ['考古學家', 'archaeologist'],
+    '獸醫': ['獸醫', 'veterinarian', 'vet'],
+    '心理學家': ['心理學家', 'psychologist'],
+    '環境科學家': ['環境科學家', 'environmental scientist'],
+    '機器人工程師': ['機器人工程師', 'robotics engineer', 'robot engineer'],
+    'AI研究員': ['AI研究員', '人工智能研究員', 'AI researcher', 'artificial intelligence researcher'],
+    '時裝設計師': ['時裝設計師', 'fashion designer'],
+    '珠寶設計師': ['珠寶設計師', 'jewelry designer'],
+    '咖啡師': ['咖啡師', 'barista'],
+    
+    // 其他職業（保持原有）
     '護理師': ['護理師', 'nurse'],
     '營養師': ['營養師', 'nutritionist'],
     '心理師': ['心理師', 'psychologist'],

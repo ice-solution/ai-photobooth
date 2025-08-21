@@ -170,16 +170,26 @@ class PiAPIFaceSwap {
           timeout: 30000
         });
         
-        // 4. 儲存結果
+        // 4. 儲存結果到本地並返回生產環境 URL
+        const filename = `piapi_faceswap_${Date.now()}.jpg`;
         const outputPath = path.join(
           path.resolve(process.env.UPLOAD_PATH || './uploads'),
-          `piapi_faceswap_${Date.now()}.jpg`
+          filename
         );
         
         fs.writeFileSync(outputPath, imageResponse.data);
         
+        // 5. 返回生產環境的 URL
+        const productionUrl = `https://photobooth-api.ice-solution.hk/uploads/${filename}`;
+        
         console.log('✅ PiAPI 臉部交換完成，結果已儲存');
-        return outputPath;
+        console.log('🌐 生產環境 URL:', productionUrl);
+        
+        return {
+          localPath: outputPath,
+          productionUrl: productionUrl,
+          filename: filename
+        };
       } else {
         throw new Error(`沒有找到結果圖片，結果格式: ${JSON.stringify(result)}`);
       }

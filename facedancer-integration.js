@@ -157,7 +157,7 @@ class FaceDancerIntegration {
       let resultPath;
 
       // 3. 使用 PiAPI
-      resultPath = await this.piapiFaceSwap.performFaceSwapWithRetry(preprocessedSource, preprocessedTarget);
+      const result = await this.piapiFaceSwap.performFaceSwapWithRetry(preprocessedSource, preprocessedTarget);
 
       // 5. 清理臨時檔案
       try {
@@ -167,7 +167,7 @@ class FaceDancerIntegration {
         console.warn('⚠️ 清理臨時檔案失敗:', cleanupError.message);
       }
 
-      return resultPath;
+      return result;
 
     } catch (error) {
       console.error('❌ PiAPI 臉部交換失敗:', error);
