@@ -3,15 +3,13 @@ const FormData = require('form-data');
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
+const PiAPIFaceSwap = require('./piapi-faceswap-integration');
+const GenderDetection = require('./gender-detection');
 
 class FaceDancerIntegration {
   constructor() {
-    // Hugging Face FaceDancer API 端點
-    this.hfApiUrl = 'https://api-inference.huggingface.co/models/felixrosberg/FaceDancer';
-    this.hfApiKey = process.env.HUGGINGFACE_API_KEY;
-    
-    // 備用 FaceDancer 服務端點（如果有自建服務）
-    this.customApiUrl = process.env.FACEDANCER_API_URL;
+    this.piapiFaceSwap = new PiAPIFaceSwap();
+    this.genderDetection = new GenderDetection();
   }
 
   // 使用 Hugging Face API 進行臉部交換
@@ -29,12 +27,12 @@ class FaceDancerIntegration {
 
       // 建立 FormData
       const formData = new FormData();
-      formData.append('source_face', sourceImage, {
-        filename: 'source_face.jpg',
+      formData.append('source_photo', sourceImage, {
+        filename: 'source_photo.jpg',
         contentType: 'image/jpeg'
       });
-      formData.append('target_image', targetImage, {
-        filename: 'target_image.jpg',
+      formData.append('target_photo', targetImage, {
+        filename: 'target_photo.jpg',
         contentType: 'image/jpeg'
       });
 
@@ -44,20 +42,28 @@ class FaceDancerIntegration {
         headers: {
           ...formData.getHeaders()
         },
-        responseType: 'arraybuffer',
         timeout: 120000 // 2分鐘超時
       });
 
-      // 儲存結果
-      const outputPath = path.join(
-        path.resolve(process.env.UPLOAD_PATH || './uploads'),
-        `facedancer_${Date.now()}.jpg`
-      );
-      
-      fs.writeFileSync(outputPath, response.data);
-      
-      console.log('✅ FaceDancer 臉部交換完成');
-      return outputPath;
+      // 處理回應
+      if (response.data.success && response.data.result) {
+        // 從 base64 解碼圖片
+        const base64Data = response.data.result.replace(/^data:image\/[a-z]+;base64,/, '');
+        const imageBuffer = Buffer.from(base64Data, 'base64');
+        
+        // 儲存結果
+        const outputPath = path.join(
+          path.resolve(process.env.UPLOAD_PATH || './uploads'),
+          `facedancer_${Date.now()}.jpg`
+        );
+        
+        fs.writeFileSync(outputPath, imageBuffer);
+        
+        console.log('✅ FaceDancer 臉部交換完成');
+        return outputPath;
+      } else {
+        throw new Error(response.data.message || '臉部交換失敗');
+      }
 
     } catch (error) {
       console.error('❌ Hugging Face FaceDancer 錯誤:', error.message);
@@ -138,30 +144,20 @@ class FaceDancerIntegration {
   // 主要臉部交換函數
   async performFaceSwap(sourceImagePath, targetImagePath) {
     try {
-      console.log('🎭 開始 FaceDancer 臉部交換流程...');
+      console.log('🎭 開始 PiAPI 臉部交換流程...');
 
-      // 1. 預處理圖片
+      // 1. 性別檢測
+      const genderResult = await this.genderDetection.detectGender(sourceImagePath, 'profession');
+      console.log(`🔍 性別檢測結果: ${genderResult.gender} (信心度: ${genderResult.confidence})`);
+
+      // 2. 預處理圖片
       const preprocessedSource = await this.preprocessImage(sourceImagePath);
       const preprocessedTarget = await this.preprocessImage(targetImagePath);
 
       let resultPath;
 
-      // 2. 嘗試使用 Hugging Face API
-      try {
-        resultPath = await this.swapFaceWithHF(preprocessedSource, preprocessedTarget);
-      } catch (hfError) {
-        console.log('⚠️ Hugging Face API 失敗，嘗試自建服務...');
-        
-        // 3. 如果失敗，嘗試自建服務
-        try {
-          resultPath = await this.swapFaceWithCustomAPI(preprocessedSource, preprocessedTarget);
-        } catch (customError) {
-          console.log('⚠️ 自建服務也失敗，使用備用方案...');
-          
-          // 4. 備用方案：簡單的圖片合成
-          resultPath = await this.fallbackFaceSwap(sourceImagePath, targetImagePath);
-        }
-      }
+      // 3. 使用 PiAPI
+      resultPath = await this.piapiFaceSwap.performFaceSwapWithRetry(preprocessedSource, preprocessedTarget);
 
       // 5. 清理臨時檔案
       try {
@@ -174,7 +170,7 @@ class FaceDancerIntegration {
       return resultPath;
 
     } catch (error) {
-      console.error('❌ FaceDancer 臉部交換失敗:', error);
+      console.error('❌ PiAPI 臉部交換失敗:', error);
       throw error;
     }
   }

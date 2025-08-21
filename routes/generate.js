@@ -6,28 +6,28 @@ const User = require('../models/User');
 
 const router = express.Router();
 
-// 職業提示詞模板
+// 職業提示詞模板（男性正面照）
 const PROFESSION_PROMPTS = {
-  '醫生': 'professional portrait of a doctor in white coat, medical setting, confident pose, high quality, detailed',
-  '護士': 'professional portrait of a nurse in uniform, healthcare setting, caring expression, high quality, detailed',
-  '教師': 'professional portrait of a teacher in classroom, educational setting, warm smile, high quality, detailed',
-  '律師': 'professional portrait of a lawyer in business suit, court setting, confident pose, high quality, detailed',
-  '工程師': 'professional portrait of an engineer in office, technical setting, focused expression, high quality, detailed',
-  '設計師': 'professional portrait of a designer in creative studio, artistic setting, creative pose, high quality, detailed',
-  '會計師': 'professional portrait of an accountant in office, financial setting, professional pose, high quality, detailed',
-  '建築師': 'professional portrait of an architect with blueprints, construction setting, thoughtful pose, high quality, detailed',
-  '警察': 'professional portrait of a police officer in uniform, law enforcement setting, authoritative pose, high quality, detailed',
-  '消防員': 'professional portrait of a firefighter in uniform, fire station setting, brave pose, high quality, detailed',
-  '軍人': 'professional portrait of a soldier in uniform, military setting, disciplined pose, high quality, detailed',
-  '飛行員': 'professional portrait of a pilot in uniform, cockpit setting, confident pose, high quality, detailed',
-  '廚師': 'professional portrait of a chef in kitchen uniform, kitchen setting, culinary pose, high quality, detailed',
-  '攝影師': 'professional portrait of a photographer with camera, studio setting, artistic pose, high quality, detailed',
-  '藝術家': 'professional portrait of an artist in studio, creative setting, artistic pose, high quality, detailed',
-  '音樂家': 'professional portrait of a musician with instrument, concert setting, musical pose, high quality, detailed',
-  '演員': 'professional portrait of an actor on stage, theater setting, dramatic pose, high quality, detailed',
-  '運動員': 'professional portrait of an athlete in sports uniform, stadium setting, athletic pose, high quality, detailed',
-  '科學家': 'professional portrait of a scientist in laboratory, research setting, focused pose, high quality, detailed',
-  '記者': 'professional portrait of a journalist with microphone, news setting, professional pose, high quality, detailed'
+  '醫生': 'professional portrait of a male doctor in white coat, medical setting, confident pose, front facing, looking directly at camera, high quality, detailed, realistic, natural lighting',
+  '護士': 'professional portrait of a male nurse in uniform, healthcare setting, caring expression, front facing, looking directly at camera, high quality, detailed, realistic, natural lighting',
+  '教師': 'professional portrait of a male teacher in classroom, educational setting, warm smile, front facing, looking directly at camera, high quality, detailed, realistic, natural lighting',
+  '律師': 'professional portrait of a male lawyer in business suit, court setting, confident pose, front facing, looking directly at camera, high quality, detailed, realistic, natural lighting',
+  '工程師': 'professional portrait of a male engineer in office, technical setting, focused expression, front facing, looking directly at camera, high quality, detailed, realistic, natural lighting',
+  '設計師': 'professional portrait of a male designer in creative studio, artistic setting, creative pose, front facing, looking directly at camera, high quality, detailed, realistic, natural lighting',
+  '會計師': 'professional portrait of a male accountant in office, financial setting, professional pose, front facing, looking directly at camera, high quality, detailed, realistic, natural lighting',
+  '建築師': 'professional portrait of a male architect with blueprints, construction setting, thoughtful pose, front facing, looking directly at camera, high quality, detailed, realistic, natural lighting',
+  '警察': 'professional portrait of a male police officer in uniform, law enforcement setting, authoritative pose, front facing, looking directly at camera, high quality, detailed, realistic, natural lighting',
+  '消防員': 'professional portrait of a male firefighter in uniform, fire station setting, brave pose, front facing, looking directly at camera, high quality, detailed, realistic, natural lighting',
+  '軍人': 'professional portrait of a male soldier in uniform, military setting, disciplined pose, front facing, looking directly at camera, high quality, detailed, realistic, natural lighting',
+  '飛行員': 'professional portrait of a male pilot in uniform, cockpit setting, confident pose, front facing, looking directly at camera, high quality, detailed, realistic, natural lighting',
+  '廚師': 'professional portrait of a male chef in kitchen uniform, kitchen setting, culinary pose, front facing, looking directly at camera, high quality, detailed, realistic, natural lighting',
+  '攝影師': 'professional portrait of a male photographer with camera, studio setting, artistic pose, front facing, looking directly at camera, high quality, detailed, realistic, natural lighting',
+  '藝術家': 'professional portrait of a male artist in studio, creative setting, artistic pose, front facing, looking directly at camera, high quality, detailed, realistic, natural lighting',
+  '音樂家': 'professional portrait of a male musician with instrument, concert setting, musical pose, front facing, looking directly at camera, high quality, detailed, realistic, natural lighting',
+  '演員': 'professional portrait of a male actor on stage, theater setting, dramatic pose, front facing, looking directly at camera, high quality, detailed, realistic, natural lighting',
+  '運動員': 'professional portrait of a male athlete in sports uniform, stadium setting, athletic pose, front facing, looking directly at camera, high quality, detailed, realistic, natural lighting',
+  '科學家': 'professional portrait of a male scientist in laboratory, research setting, focused pose, front facing, looking directly at camera, high quality, detailed, realistic, natural lighting',
+  '記者': 'professional portrait of a male journalist with microphone, news setting, professional pose, front facing, looking directly at camera, high quality, detailed, realistic, natural lighting'
 };
 
 // 生成職業照
@@ -49,12 +49,12 @@ router.post('/profession-photo', async (req, res) => {
     // 獲取職業提示詞
     let prompt = PROFESSION_PROMPTS[profession];
     if (!prompt) {
-      // 如果沒有預設提示詞，使用通用模板
-      prompt = `professional portrait of a ${profession} in work environment, professional setting, confident pose, high quality, detailed, realistic`;
+      // 如果沒有預設提示詞，使用通用模板（男性正面照）
+      prompt = `professional portrait of a male ${profession} in work environment, professional setting, confident pose, front facing, looking directly at camera, high quality, detailed, realistic, natural lighting`;
     }
 
-    // 負面提示詞
-    const negativePrompt = 'blurry, low quality, distorted, unrealistic, cartoon, anime, painting, sketch, watermark, text, logo, signature';
+    // 負面提示詞（避免女性、側面照等）
+    const negativePrompt = 'blurry, low quality, distorted, unrealistic, cartoon, anime, painting, sketch, watermark, text, logo, signature, female, woman, girl, side profile, side view, looking away, closed eyes, sunglasses, hat, mask';
 
     // 調用 Stability AI API
     const response = await axios.post(process.env.STABILITY_API_URL, {

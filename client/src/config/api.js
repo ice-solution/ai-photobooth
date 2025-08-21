@@ -31,7 +31,7 @@ export const API_ENDPOINTS = {
   FACE_SWAP: `${config.baseURL}/api/faceswap/swap`,
   
   // 上傳圖片
-  UPLOAD_PHOTO: `${config.baseURL}/api/upload/photo`
+  UPLOAD_PHOTO: `${config.baseURL}/api/faceswap/upload-photo`
 };
 
 // 導出配置
