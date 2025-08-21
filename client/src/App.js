@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import VoiceRecorder from './components/VoiceRecorder';
 import PhotoCapture from './components/PhotoCapture';
+import GenderSelection from './components/GenderSelection';
 import ProfessionValidation from './components/ProfessionValidation';
 import ResultDisplay from './components/ResultDisplay';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -15,6 +16,7 @@ function App() {
   const [voiceText, setVoiceText] = useState('');
   const [profession, setProfession] = useState('');
   const [userPhoto, setUserPhoto] = useState('');
+  const [userGender, setUserGender] = useState('');
   const [generatedPhoto, setGeneratedPhoto] = useState('');
   const [finalPhoto, setFinalPhoto] = useState('');
 
@@ -38,8 +40,13 @@ function App() {
 
   const handlePhotoCaptured = (photoUrl) => {
     setUserPhoto(photoUrl);
+    setCurrentStep('gender');
+  };
+
+  const handleGenderSelected = (gender) => {
+    setUserGender(gender);
     setCurrentStep('generating');
-    generateProfessionPhoto(profession);
+    generateProfessionPhoto(profession, gender);
   };
 
   const handleGenerationComplete = (photoUrl) => {
@@ -53,7 +60,7 @@ function App() {
     setCurrentStep('result');
   };
 
-  const generateProfessionPhoto = async (profession) => {
+  const generateProfessionPhoto = async (profession, gender) => {
     setError('');
     
     try {
@@ -64,6 +71,7 @@ function App() {
         },
         body: JSON.stringify({
           profession,
+          gender,
           sessionId
         })
       });
@@ -111,6 +119,7 @@ function App() {
     setVoiceText('');
     setProfession('');
     setUserPhoto('');
+    setUserGender('');
     setGeneratedPhoto('');
     setFinalPhoto('');
     setError('');
@@ -143,6 +152,15 @@ function App() {
             profession={profession}
             onCaptured={handlePhotoCaptured}
             onBack={() => setCurrentStep('validation')}
+          />
+        );
+      case 'gender':
+        return (
+          <GenderSelection
+            userPhoto={userPhoto}
+            profession={profession}
+            onGenderSelected={handleGenderSelected}
+            onBack={() => setCurrentStep('photo')}
           />
         );
       case 'generating':

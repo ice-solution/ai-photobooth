@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 調試頁面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        input, select {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 AI 拍照系統 - API 調試頁面</h1>
+    
+    <div class="test-section">
+        <h2>🔗 API 端點測試</h2>
+        <p>測試各個 API 端點是否正常工作</p>
+        
+        <div>
+            <h3>1. 健康檢查</h3>
+            <button onclick="testHealth()">測試 /api/health</button>
+            <div id="health-result" class="result"></div>
+        </div>
+        
+        <div>
+            <h3>2. 語音轉文字</h3>
+            <input type="text" id="voice-text" placeholder="輸入測試文字" value="我想當醫生">
+            <button onclick="testVoice()">測試 /api/voice/transcribe</button>
+            <div id="voice-result" class="result"></div>
+        </div>
+        
+        <div>
+            <h3>3. 職業驗證</h3>
+            <input type="text" id="profession-text" placeholder="輸入職業文字" value="我想當醫生">
+            <input type="text" id="session-id" placeholder="會話ID" value="">
+            <button onclick="testProfession()">測試 /api/profession/validate</button>
+            <div id="profession-result" class="result"></div>
+        </div>
+        
+        <div>
+            <h3>4. 照片上傳</h3>
+            <input type="file" id="photo-file" accept="image/*">
+            <input type="text" id="upload-session-id" placeholder="會話ID" value="">
+            <button onclick="testUpload()">測試 /api/faceswap/upload-photo</button>
+            <div id="upload-result" class="result"></div>
+        </div>
+        
+        <div>
+            <h3>5. 性別設定與圖片生成</h3>
+            <select id="gender-select">
+                <option value="male">男性</option>
+                <option value="female">女性</option>
+            </select>
+            <input type="text" id="profession-name" placeholder="職業名稱" value="醫生">
+            <input type="text" id="generate-session-id" placeholder="會話ID" value="">
+            <button onclick="testGenerate()">測試 /api/generate/profession-photo</button>
+            <div id="generate-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentSessionId = '';
+
+        function log(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = isError ? 'result error' : 'result success';
+        }
+
+        async function testHealth() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                log('health-result', `✅ 成功: ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log('health-result', `❌ 錯誤: ${error.message}`, true);
+            }
+        }
+
+        async function testVoice() {
+            try {
+                const text = document.getElementById('voice-text').value;
+                const sessionId = `test_${Date.now()}`;
+                currentSessionId = sessionId;
+                
+                const response = await fetch('/api/voice/transcribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ transcribedText: text, sessionId })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('session-id').value = sessionId;
+                    document.getElementById('upload-session-id').value = sessionId;
+                    document.getElementById('generate-session-id').value = sessionId;
+                    log('voice-result', `✅ 成功: ${JSON.stringify(data, null, 2)}`);
+                } else {
+                    log('voice-result', `❌ 失敗: ${JSON.stringify(data, null, 2)}`, true);
+                }
+            } catch (error) {
+                log('voice-result', `❌ 錯誤: ${error.message}`, true);
+            }
+        }
+
+        async function testProfession() {
+            try {
+                const text = document.getElementById('profession-text').value;
+                const sessionId = document.getElementById('session-id').value;
+                
+                if (!sessionId) {
+                    throw new Error('請先執行語音轉文字測試以獲取會話ID');
+                }
+                
+                const response = await fetch('/api/profession/validate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, sessionId })
+                });
+                
+                const data = await response.json();
+                log('profession-result', `結果: ${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log('profession-result', `❌ 錯誤: ${error.message}`, true);
+            }
+        }
+
+        async function testUpload() {
+            try {
+                const fileInput = document.getElementById('photo-file');
+                const sessionId = document.getElementById('upload-session-id').value;
+                
+                if (!sessionId) {
+                    throw new Error('請先執行語音轉文字測試以獲取會話ID');
+                }
+                
+                if (!fileInput.files[0]) {
+                    throw new Error('請選擇一個圖片文件');
+                }
+                
+                const formData = new FormData();
+                formData.append('photo', fileInput.files[0]);
+                formData.append('sessionId', sessionId);
+                
+                const response = await fetch('/api/faceswap/upload-photo', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    log('upload-result', `✅ 成功: ${JSON.stringify(data, null, 2)}`);
+                } else {
+                    log('upload-result', `❌ 失敗: ${JSON.stringify(data, null, 2)}`, true);
+                }
+            } catch (error) {
+                log('upload-result', `❌ 錯誤: ${error.message}`, true);
+            }
+        }
+
+        async function testGenerate() {
+            try {
+                const gender = document.getElementById('gender-select').value;
+                const profession = document.getElementById('profession-name').value;
+                const sessionId = document.getElementById('generate-session-id').value;
+                
+                if (!sessionId) {
+                    throw new Error('請先執行語音轉文字測試以獲取會話ID');
+                }
+                
+                const response = await fetch('/api/generate/profession-photo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ profession, gender, sessionId })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    log('generate-result', `✅ 成功: ${JSON.stringify(data, null, 2)}`);
+                } else {
+                    log('generate-result', `❌ 失敗: ${JSON.stringify(data, null, 2)}`, true);
+                }
+            } catch (error) {
+                log('generate-result', `❌ 錯誤: ${error.message}`, true);
+            }
+        }
+
+        // 自動測試健康檢查
+        window.onload = function() {
+            testHealth();
+        }
+    </script>
+</body>
+</html>

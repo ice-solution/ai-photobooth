@@ -59,7 +59,10 @@ router.post('/transcribe', async (req, res) => {
     // 儲存或更新使用者資料
     let user = await User.findOne({ sessionId });
     if (!user) {
-      user = new User({ sessionId });
+      user = new User({ 
+        sessionId,
+        gender: '' // 設置默認值
+      });
     }
     
     user.voiceText = text;

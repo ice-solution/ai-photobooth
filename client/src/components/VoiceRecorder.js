@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mic, RotateCcw, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { API_ENDPOINTS } from '../config/api';
 
 const VoiceRecorder = ({ sessionId, onComplete }) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -66,7 +65,7 @@ const VoiceRecorder = ({ sessionId, onComplete }) => {
     
     try {
       // 直接使用前端識別的文字，不需要上傳音訊檔案
-              const response = await fetch(API_ENDPOINTS.VOICE_TRANSCRIBE, {
+      const response = await fetch('/api/voice/transcribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
