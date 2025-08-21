@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Check, X, Edit3 } from 'lucide-react';
+import { ArrowLeft, Check, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { API_ENDPOINTS } from '../config/api';
 
@@ -96,46 +96,13 @@ const ProfessionValidation = ({ voiceText, sessionId, onValidated, onBack }) => 
 
         {/* 語音文字顯示 */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
+          <div className="mb-2">
             <label className="text-sm font-medium text-gray-700">語音內容：</label>
-            <button
-              onClick={() => setIsEditing(!isEditing)}
-              className="text-primary-600 hover:text-primary-700 text-sm flex items-center"
-            >
-              <Edit3 className="w-4 h-4 mr-1" />
-              編輯
-            </button>
           </div>
           
-          {isEditing ? (
-            <div className="space-y-3">
-              <textarea
-                value={editedText}
-                onChange={(e) => setEditedText(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
-                rows="3"
-                placeholder="請輸入或修改文字內容..."
-              />
-              <div className="flex space-x-3">
-                <button
-                  onClick={() => setIsEditing(false)}
-                  className="flex-1 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  取消
-                </button>
-                <button
-                  onClick={handleEditSubmit}
-                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
-                >
-                  確認修改
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="p-4 bg-gray-50 rounded-lg border">
-              <p className="text-gray-800">{editedText}</p>
-            </div>
-          )}
+          <div className="p-4 bg-gray-50 rounded-lg border">
+            <p className="text-gray-800">{editedText}</p>
+          </div>
         </div>
 
         {/* 驗證結果 */}
@@ -189,7 +156,7 @@ const ProfessionValidation = ({ voiceText, sessionId, onValidated, onBack }) => 
               onClick={handleRetry}
               className="flex-1 px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 flex items-center justify-center"
             >
-              <Edit3 className="w-5 h-5 mr-2" />
+              <X className="w-5 h-5 mr-2" />
               重新輸入
             </motion.button>
           )}

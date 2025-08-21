@@ -179,15 +179,19 @@ class PiAPIFaceSwap {
         
         fs.writeFileSync(outputPath, imageResponse.data);
         
-        // 5. 返回生產環境的 URL
-        const productionUrl = `https://photobooth-api.ice-solution.hk/uploads/${filename}`;
+        // 5. 根據環境返回正確的 URL
+        const isDevelopment = process.env.NODE_ENV === 'development';
+        const baseUrl = isDevelopment 
+          ? 'http://localhost:5001' 
+          : 'https://photobooth-api.ice-solution.hk';
+        const finalImageUrl = `${baseUrl}/uploads/${filename}`;
         
         console.log('✅ PiAPI 臉部交換完成，結果已儲存');
-        console.log('🌐 生產環境 URL:', productionUrl);
+        console.log(`🌐 ${isDevelopment ? '開發環境' : '生產環境'} URL:`, finalImageUrl);
         
         return {
           localPath: outputPath,
-          productionUrl: productionUrl,
+          productionUrl: finalImageUrl,
           filename: filename
         };
       } else {
