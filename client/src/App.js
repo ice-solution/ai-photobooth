@@ -7,6 +7,7 @@ import GenderSelection from './components/GenderSelection';
 import ProfessionValidation from './components/ProfessionValidation';
 import ResultDisplay from './components/ResultDisplay';
 import LoadingSpinner from './components/LoadingSpinner';
+
 import { generateSessionId } from './utils/session';
 import { API_ENDPOINTS } from './config/api';
 
@@ -209,7 +210,7 @@ function App() {
   };
 
   return (
-    <div className="App">
+    <div className="App relative">
       <Toaster
         position="top-center"
         toastOptions={{
@@ -228,6 +229,7 @@ function App() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
+          className="relative z-10"
         >
           {renderCurrentStep()}
         </motion.div>

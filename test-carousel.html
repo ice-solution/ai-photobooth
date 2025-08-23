@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>背景走馬燈測試</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #7f287d;
+            overflow: hidden;
+        }
+        
+        .carousel-container {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .carousel {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            animation: slide 60s linear infinite;
+        }
+        
+        .image-item {
+            position: relative;
+            margin: 0 2rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .image-item:hover {
+            transform: scale(1.05);
+        }
+        
+        .image-container {
+            position: relative;
+            width: 256px;
+            height: 320px;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .image-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+        }
+        
+        .image-label {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            right: 1rem;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            text-align: center;
+        }
+        
+        .image-label span {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .decoration {
+            position: absolute;
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .decoration-1 {
+            top: -0.5rem;
+            right: -0.5rem;
+            width: 1.5rem;
+            height: 1.5rem;
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+        }
+        
+        .decoration-2 {
+            bottom: -0.5rem;
+            left: -0.5rem;
+            width: 1rem;
+            height: 1rem;
+            background: linear-gradient(135deg, #ec4899, #db2777);
+        }
+        
+        @keyframes slide {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-1000px); }
+        }
+        
+        .content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .main-card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #7f287d;
+            margin-bottom: 1rem;
+        }
+        
+        .subtitle {
+            font-size: 1.125rem;
+            color: #6b7280;
+            margin-bottom: 2rem;
+        }
+        
+        .status {
+            background: #f3f4f6;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .status h3 {
+            margin: 0 0 0.5rem 0;
+            color: #374151;
+        }
+        
+        .status p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="carousel-container">
+        <div class="carousel" id="carousel">
+            <!-- 圖片將由 JavaScript 動態添加 -->
+        </div>
+    </div>
+    
+    <div class="content">
+        <div class="main-card">
+            <h1 class="title">🎭 AI 職業照生成器</h1>
+            <p class="subtitle">讓 AI 為你創造專業的職業形象</p>
+            
+            <div class="status">
+                <h3>📊 背景走馬燈狀態</h3>
+                <p id="status-text">正在載入...</p>
+            </div>
+            
+            <div class="status">
+                <h3>🖼️ 圖片數量</h3>
+                <p id="image-count">0 張圖片</p>
+            </div>
+            
+            <div class="status">
+                <h3>🔗 API 狀態</h3>
+                <p id="api-status">檢查中...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let images = [];
+        let fallbackImages = [
+            '/api/faceswap/placeholder/doctor',
+            '/api/faceswap/placeholder/engineer',
+            '/api/faceswap/placeholder/teacher',
+            '/api/faceswap/placeholder/artist',
+            '/api/faceswap/placeholder/lawyer',
+            '/api/faceswap/placeholder/chef',
+            '/api/faceswap/placeholder/pilot',
+            '/api/faceswap/placeholder/astronaut'
+        ];
+
+        async function fetchImages() {
+            try {
+                document.getElementById('status-text').textContent = '正在獲取圖片...';
+                
+                const response = await fetch('/api/faceswap/generated-images');
+                const data = await response.json();
+                
+                if (data.success && data.images.length > 0) {
+                    images = data.images;
+                    document.getElementById('status-text').textContent = '成功載入真實圖片';
+                    document.getElementById('api-status').textContent = '✅ API 正常';
+                } else {
+                    images = fallbackImages;
+                    document.getElementById('status-text').textContent = '使用預設圖片';
+                    document.getElementById('api-status').textContent = '⚠️ 使用預設圖片';
+                }
+                
+                document.getElementById('image-count').textContent = `${images.length} 張圖片`;
+                
+            } catch (error) {
+                console.error('獲取圖片失敗:', error);
+                images = fallbackImages;
+                document.getElementById('status-text').textContent = '載入失敗，使用預設圖片';
+                document.getElementById('api-status').textContent = '❌ API 錯誤';
+                document.getElementById('image-count').textContent = `${images.length} 張預設圖片`;
+            }
+            
+            renderCarousel();
+        }
+
+        function renderCarousel() {
+            const carousel = document.getElementById('carousel');
+            carousel.innerHTML = '';
+            
+            // 重複圖片以創建無縫循環
+            const repeatedImages = [...images, ...images, ...images];
+            
+            repeatedImages.forEach((image, index) => {
+                const item = document.createElement('div');
+                item.className = 'image-item';
+                
+                item.innerHTML = `
+                    <div class="image-container">
+                        <img src="${image}" alt="Generated photo ${index + 1}" 
+                             onerror="this.src='https://via.placeholder.com/256x320/7f287d/ffffff?text=AI+Photo+${index + 1}'">
+                        <div class="image-overlay"></div>
+                        <div class="image-label">
+                            <span>AI 職業照 #${index + 1}</span>
+                        </div>
+                    </div>
+                    <div class="decoration decoration-1"></div>
+                    <div class="decoration decoration-2"></div>
+                `;
+                
+                carousel.appendChild(item);
+            });
+        }
+
+        // 頁面載入時獲取圖片
+        window.addEventListener('load', fetchImages);
+        
+        // 每30秒刷新一次圖片
+        setInterval(fetchImages, 30000);
+    </script>
+</body>
+</html>

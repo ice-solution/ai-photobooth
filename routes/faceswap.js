@@ -171,6 +171,8 @@ router.get('/result/:sessionId', async (req, res) => {
   }
 });
 
+
+
 // 圖片處理函數
 async function processImage(imagePath) {
   const filename = path.basename(imagePath);

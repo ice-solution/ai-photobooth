@@ -22,7 +22,9 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "start:prod": "REACT_APP_ENV=production react-scripts start",
     "build": "react-scripts build",
+    "build:prod": "REACT_APP_ENV=production react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -41,7 +43,7 @@
     "development": [
       "last 1 chrome version",
       "last 1 firefox version",
-      "last 1 safari version"
+      "safari >= 10"
     ]
   },
   "proxy": "http://localhost:5001"

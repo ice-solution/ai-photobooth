@@ -12,9 +12,16 @@ const API_CONFIG = {
   }
 };
 
-// 根據環境選擇配置
-const env = process.env.NODE_ENV || 'development';
+// 強制設置為 production 環境
+const env = 'production';
 const config = API_CONFIG[env];
+
+// 調試信息
+console.log('🔧 API 配置調試信息:');
+console.log('📍 當前域名:', window.location.hostname);
+console.log('🌍 強制環境:', env);
+console.log('🔗 Base URL:', config.baseURL);
+console.log('⏱️ 超時設置:', config.timeout);
 
 // API 端點
 export const API_ENDPOINTS = {

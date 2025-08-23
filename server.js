@@ -21,6 +21,7 @@ if (!fs.existsSync(uploadPath)) {
 
 // 靜態檔案服務
 app.use('/uploads', express.static(uploadPath));
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // 連接 MongoDB
 console.log(process.env.MONGODB_URI);
